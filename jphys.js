@@ -12,8 +12,10 @@ $(document).ready(function() {
 
 	var t = 0;
 	var frameinterval = 3;
+	var num = 5;
 	
-	var ball = new Ball(50,H-1,10,10,-15,'black');
+	//var ball = new Ball(50,50,10,10,-15,'black');
+	var balls = null; //array
 	var gravity = .2;
 	var bounce = -.9;
 	var floorfriction = .998;
@@ -51,6 +53,14 @@ $(document).ready(function() {
 			);
 		ctx.fillStyle = ball.color;
 		ctx.fill();
+	}
+
+	function drawStage() {
+		balls = new Array();
+
+		for (var i = 0; i<num; i++){
+			balls
+		}
 	}
 
 	function updateBall() {
