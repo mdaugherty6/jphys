@@ -11,22 +11,26 @@ $(document).ready(function() {
 	var ctx = canvas.getContext('2d');
 
 	var t = 0;
-	var frameinterval = 3;
-	var num = 5;
+	var frameinterval = 10;
+	var num = 4;
+	var startx = 200;
+	var starty = 200;
+	var radius = 25;
 	
-	//var ball = new Ball(50,50,10,10,-15,'black');
-	var balls = null; //array
-	var gravity = .2;
+	var balls = null;
+	var gravity = .3;
 	var bounce = -.9;
-	var floorfriction = .998;
+	var floorfriction = .999;
+
+	drawStage();
 
 	setInterval(updateStage, frameinterval);
 
 	function updateStage() {
 		t+=frameinterval;
 		clearCanvas();
-		updateBall();
-		drawBall();
+		updateBalls();
+		drawBalls();
 	}
 
 	function Ball(x,y,radius,vx,vy,color) {
@@ -41,58 +45,70 @@ $(document).ready(function() {
 		this.origy = y;
 	}
 
-	function drawBall(){
-		ctx.beginPath();
-		ctx.arc(
-			ball.x,
-			ball.y,
-			ball.radius,
-			0,
-			Math.PI*2,
-			false
-			);
-		ctx.fillStyle = ball.color;
-		ctx.fill();
+	function drawBalls(){
+		for (var i = 0; i < balls.length; i++) {
+			ctx.beginPath();
+			ctx.arc(
+				balls[i].x,
+				balls[i].y,
+				balls[i].radius,
+				0,
+				Math.PI*2,
+				false
+				);
+			ctx.fillStyle = balls[i].color;
+			ctx.fill();
+		}
+	
 	}
 
 	function drawStage() {
 		balls = new Array();
 
 		for (var i = 0; i<num; i++){
-			balls
+			balls.push(new Ball(startx,starty,radius,-5+Math.random()*10,-5+Math.random()*10,'black'));
 		}
+
+		return balls;
+
 	}
 
-	function updateBall() {
-		
-		ball.vy += gravity;
-		ball.vx *= floorfriction;
+	function updateBalls() {
 
-		ball.x += ball.vx;
-		ball.y += ball.vy;
+		for (var i =0; i <balls.length; i++){
+			ball = balls[i];
+			ball.vy += gravity;
+			ball.vx *= floorfriction;
 
-		if (ball.y + ball.radius > H) {
-			ball.y = H - ball.radius;
-			ball.vy *= bounce;
-			if (ball.x + ball.radius > W) {
+			ball.x += ball.vx;
+			ball.y += ball.vy;
+
+			if (ball.y + ball.radius > H) {
+				ball.y = H - ball.radius;
+				ball.vy *= bounce;
+				if (ball.x + ball.radius > W) {
+					ball.x = W - ball.radius;
+					ball.vx = -ball.vx;
+				}
+				else if (ball.x - ball.radius < 0) {
+					ball.x = ball.radius;
+					ball.vx = -ball.vx;
+			}
+			}
+
+			else if (ball.x + ball.radius > W) {
 				ball.x = W - ball.radius;
 				ball.vx = -ball.vx;
 			}
+
 			else if (ball.x - ball.radius < 0) {
 				ball.x = ball.radius;
 				ball.vx = -ball.vx;
-		}
-		}
+			}
 
-		else if (ball.x + ball.radius > W) {
-			ball.x = W - ball.radius;
-			ball.vx = -ball.vx;
 		}
+		
 
-		else if (ball.x - ball.radius < 0) {
-			ball.x = ball.radius;
-			ball.vx = -ball.vx;
-		}
 
 	}
 
