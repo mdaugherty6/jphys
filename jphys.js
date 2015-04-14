@@ -12,10 +12,10 @@ $(document).ready(function() {
 	var frameinterval = 20;
 	var num = 2;
 	var gravity = .3;
-	var bounce = -.9;
-	var floorfriction = .999;
+	var bounce = -.6;
+	var floorfriction = .998;
 
-	var radius = 20;
+	var radius = 30;
 	var balls = null;
 	drawStage();
 
@@ -57,7 +57,6 @@ $(document).ready(function() {
 			ctx.fillStyle = ball.color;
 			ctx.fill();
 		}
-	
 	}
 
 	function drawStage() {
@@ -65,7 +64,7 @@ $(document).ready(function() {
 		for (var i = 0; i<num; i++){
 			var startx = radius+Math.floor(Math.random()*(W-radius));
 			var starty = radius+Math.floor(Math.random()*(H-radius));
-			var vx =-6+Math.random()*12;
+			var vx =3;
 			var vy = -6+Math.random()*12;
 			balls.push(new Ball(startx,starty,radius,vx,vy,randomColor()));
 		}
@@ -123,38 +122,86 @@ $(document).ready(function() {
 	}
 
 	function detectCollide() {
-		ball1 = balls[0];
-		ball2 = balls[1];
-		console.log(ball1.origx, ball2.origx);
-		var ball1_right = ball1.x+ball1.radius;
-		var ball1_left = ball1.x-ball1.radius;
-		var ball2_right = ball2.x+ball2.radius;
-		var ball2_left = ball2.x-ball2.radius;
+		var vx = ball
+		var otherball = null;
 
-		if (Math.abs(ball1.origx-ball2.origx) >= ball1.radius*2){
+		for (var i = 0; i < num; i++){
+			ball = balls[i];
+			if (ball != otherball) {
+				for (var j = 0; j < num; j++){
+					otherball = balls[j];
+					if(otherball != ball){
+						handleCollision(ball,otherball);
 
-			if(ball1_right > ball2_left && ball1_left < ball2_right) {
-				if (ball1.vx > 0 && ball2.vx > 0){
-					if (ball1.vx > ball2.vx) ball1.vx = -ball1.vx
-					else ball2.vx = - ball2.vx	
+					}
 				}
-				else if (ball1.vx < 0 && ball2.vx < 0){
-					if (ball1.vx > ball2.vx) ball2.vx = -ball2.vx
-					else ball1.vx = - ball1.vx	
-				}
-				else{
-					ball1.vx = -ball1.vx;
-					ball2.vx = -ball2.vx;
-				}
-
-			}	
+			}
 		}
-		// else ball1.x += 5
-	}	
+	}
+
+	function handleCollision(ball,otherball){
+		var dx = (ball.x + ball.radius) - (otherball.x+otherball.radius);
+		var dy = (ball.y + otherball.radius) - (otherball.y+otherball.radius);
+		var distance = Math.sqrt(dx*dx+dy*dy);
+
+
+		var un_normx = (dx/distance);
+		var un_normy = (dy/distance);
+		var un_tanx = -un_normy;
+		var un_tany = un_normx;
+
+		var v_norm = un_normx*ball.vx+un_normy*ball.vy;
+		var v_tan = un_tanx*ball.vx+un_tany*ball.vy;
+		var ov_norm = un_normx*otherball.vx+un_normy*otherball.vy;
+		var ov_tan = un_tanx*otherball.vx+un_tany*otherball.vy;
+		console.log(v_tan, ov_tan);
+	
+
+		if (distance < (ball.radius + otherball.radius+5)) {
+			var nv_tan = v_tan;
+			var nov_tan = ov_tan;
+
+			var nv_norm = (ov_norm);
+
+			var nov_norm = (v_norm);
+
+			//find x and y component of normal for ball
+			var new_norm_x = nv_norm * un_normx;
+			var new_norm_y = nv_norm * un_normy;
+
+			//x & y of normal for otherball
+			var other_new_norm_x = nov_norm *un_normx;
+			var other_new_norm_y = nov_norm *un_normy;
+
+			//x & y of tangent for ball
+			var new_tan_x = nv_tan * un_tanx;
+			var new_tan_y = nv_norm * un_tany;
+
+			//x & y of tangent for otherball
+			var other_new_tan_x = nov_tan *un_tanx;
+			var other_new_tan_y = nov_tan *un_tany;
+
+			//convert to regular coordinates for ball
+			var new_ball_velocity_x = new_norm_x+new_tan_x;
+			var new_ball_velocity_y = new_norm_y+new_tan_y;
+
+			//regular coords for otherball
+			var new_oball_velocity_x = other_new_norm_x+other_new_tan_x;
+			var new_oball_velocity_y = other_new_norm_y+other_new_tan_y;
+
+			ball.vx = new_ball_velocity_x;
+			ball.vy = new_ball_velocity_y;
+			otherball.vx = new_oball_velocity_x;
+			otherball.vy = new_oball_velocity_y;
+		}
+		
+	}
 
 	function clearCanvas() {
 		ctx.clearRect(0,0,W,H);
 	}
+
+
 
 
 });
