@@ -64,9 +64,9 @@ $(document).ready(function() {
 		balls = new Array();
 		for (var i = 0; i<num; i++){
 			var startx = radius+Math.floor(Math.random()*(W-radius));
-			var starty = H-radius;//radius+Math.floor(Math.random()*(H-radius));
+			var starty = radius+Math.floor(Math.random()*(H-radius));
 			var vx =-6+Math.random()*12;
-			var vy = 0;//-6+Math.random()*12;
+			var vy = -6+Math.random()*12;
 			balls.push(new Ball(startx,starty,radius,vx,vy,randomColor()));
 		}
 
@@ -96,10 +96,6 @@ $(document).ready(function() {
 			ball.x += ball.vx;
 			ball.y += ball.vy;
 
-			// ball.vmag = Math.sqrt(Math.pow(ball.vx,2)+Math.pow(ball.vy,2));
-			// ball.vangle = Math.atan(ball.vy/ball.vx);
-			// console.log(ball.vmag, ball.vangle);
-
 			//wall and floor detection 
 			if (ballbottom > H) {
 				ball.y = H - ball.radius;
@@ -111,7 +107,7 @@ $(document).ready(function() {
 				else if (ball.x - ball.radius < 0) {
 					ball.x = ball.radius;
 					ball.vx = -ball.vx;
-			}
+				}
 			}
 
 			else if (ballright > W) {
@@ -129,29 +125,32 @@ $(document).ready(function() {
 	function detectCollide() {
 		ball1 = balls[0];
 		ball2 = balls[1];
-		ball1_right = ball1.x+ball1.radius;
-		ball1_left = ball1.x-ball1.radius;
-		ball2_right = ball2.x+ball2.radius;
-		ball2_left = ball2.x-ball2.radius;
+		console.log(ball1.origx, ball2.origx);
+		var ball1_right = ball1.x+ball1.radius;
+		var ball1_left = ball1.x-ball1.radius;
+		var ball2_right = ball2.x+ball2.radius;
+		var ball2_left = ball2.x-ball2.radius;
 
-		if(ball1_right > ball2_left && ball1_left < ball2_right) {
-			if (ball1.vx > 0 && ball2.vx > 0){
-				if (ball1.vx > ball2.vx) ball1.vx = -ball1.vx
-				else ball2.vx = - ball2.vx	
-			}
-			else if (ball1.vx < 0 && ball2.vx < 0){
-				if (ball1.vx > ball2.vx) ball2.vx = -ball2.vx
-				else ball1.vx = - ball1.vx	
-			}
-			else{
-				ball1.vx = -ball1.vx;
-				ball2.vx = -ball2.vx;
-			}
-			
+		if (Math.abs(ball1.origx-ball2.origx) >= ball1.radius*2){
+
+			if(ball1_right > ball2_left && ball1_left < ball2_right) {
+				if (ball1.vx > 0 && ball2.vx > 0){
+					if (ball1.vx > ball2.vx) ball1.vx = -ball1.vx
+					else ball2.vx = - ball2.vx	
+				}
+				else if (ball1.vx < 0 && ball2.vx < 0){
+					if (ball1.vx > ball2.vx) ball2.vx = -ball2.vx
+					else ball1.vx = - ball1.vx	
+				}
+				else{
+					ball1.vx = -ball1.vx;
+					ball2.vx = -ball2.vx;
+				}
+
+			}	
 		}
-	}
-
-		
+		// else ball1.x += 5
+	}	
 
 	function clearCanvas() {
 		ctx.clearRect(0,0,W,H);
