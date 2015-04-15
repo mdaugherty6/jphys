@@ -9,13 +9,13 @@ $(document).ready(function() {
 	var ctx = canvas.getContext('2d');
 
 	var t = 0;
-	var frameinterval = 20;
-	var num = 2;
-	var gravity = .3;
-	var bounce = -.6;
+	var frameinterval = 25;
+	var num = 30;
+	var gravity = .1;
+	var bounce = -.99;
 	var floorfriction = .998;
 
-	var radius = 30;
+	var radius = 10;
 	var balls = null;
 	drawStage();
 
@@ -24,8 +24,8 @@ $(document).ready(function() {
 	function updateStage() {
 		t+=frameinterval;
 		clearCanvas();
+		detectCollide(balls);
 		updateBalls();
-		detectCollide();
 		drawBalls();
 	}
 
@@ -40,6 +40,9 @@ $(document).ready(function() {
 		this.color = color;
 		this.origx = x;
 		this.origy = y;
+
+		//vectors
+
 	}
 
 	function drawBalls(){
@@ -64,10 +67,11 @@ $(document).ready(function() {
 		for (var i = 0; i<num; i++){
 			var startx = radius+Math.floor(Math.random()*(W-radius));
 			var starty = radius+Math.floor(Math.random()*(H-radius));
-			var vx =3;
+			var vx =-6+Math.random()*12;
 			var vy = -6+Math.random()*12;
 			balls.push(new Ball(startx,starty,radius,vx,vy,randomColor()));
 		}
+		drawBalls();
 
 		return balls;
 	}
@@ -121,27 +125,36 @@ $(document).ready(function() {
 		}
 	}
 
-	function detectCollide() {
-		var vx = ball
-		var otherball = null;
+	function detectCollide(balls) {
 
-		for (var i = 0; i < num; i++){
-			ball = balls[i];
-			if (ball != otherball) {
-				for (var j = 0; j < num; j++){
-					otherball = balls[j];
-					if(otherball != ball){
-						handleCollision(ball,otherball);
+		var blist = k_combinations(balls,2) 
 
-					}
-				}
+		for (var i = 0; i < blist.length; i++){
+			var ball1 = blist[i][0];
+			var ball2 = blist[i][1];
+
+			var origx = (ball1.origx - ball2.origx);
+			var origy = (ball1.origy - ball2.origy);
+			var origdistance = Math.sqrt(origx*origx+origy*origy);
+			var dx = (ball1.x) - (ball2.x);
+			var dy = (ball1.y) - (ball2.y);
+
+			var distance = Math.sqrt(dx*dx+dy*dy);
+
+			handleCollision(ball1,ball2);
 			}
-		}
+			// if ( distance < ball.radius*1.8) //console.log('test1');
+
 	}
 
+		//handleCollision(ball3,ball2);
+		//console.log(distance,dx, dy);
+
 	function handleCollision(ball,otherball){
-		var dx = (ball.x + ball.radius) - (otherball.x+otherball.radius);
-		var dy = (ball.y + otherball.radius) - (otherball.y+otherball.radius);
+
+		var dx = (ball.x) - (otherball.x);
+		var dy = (ball.y) - (otherball.y);
+
 		var distance = Math.sqrt(dx*dx+dy*dy);
 
 
@@ -154,48 +167,90 @@ $(document).ready(function() {
 		var v_tan = un_tanx*ball.vx+un_tany*ball.vy;
 		var ov_norm = un_normx*otherball.vx+un_normy*otherball.vy;
 		var ov_tan = un_tanx*otherball.vx+un_tany*otherball.vy;
-		console.log(v_tan, ov_tan);
 	
 
-		if (distance < (ball.radius + otherball.radius+5)) {
-			var nv_tan = v_tan;
-			var nov_tan = ov_tan;
+		var nv_tan = v_tan;
+		var nov_tan = ov_tan;
 
-			var nv_norm = (ov_norm);
+		if ( ball.radius*2 > distance) {
 
-			var nov_norm = (v_norm);
+
+			var nv_norm = (ov_norm*.9),
+				nov_norm = (v_norm*.9);
+
+				if (distance < ball.radius*2-1) {
+					ball.x += 2*un_normx;
+					ball.vx = -ball.vx
+					//ball.y += (ball.radius+3)*2*un_normy;
+					otherball.x -= (2)*un_normx;
+					otherball.vx = -otherball.vy;
+					//otherball.y += (ball.radius+3)*2*un_normy;
+					//console.log('test');
+				}
 
 			//find x and y component of normal for ball
-			var new_norm_x = nv_norm * un_normx;
-			var new_norm_y = nv_norm * un_normy;
+				new_norm_x = nv_norm * un_normx,
+			 	new_norm_y = nv_norm * un_normy,
 
 			//x & y of normal for otherball
-			var other_new_norm_x = nov_norm *un_normx;
-			var other_new_norm_y = nov_norm *un_normy;
+				other_new_norm_x = nov_norm *un_normx,
+				other_new_norm_y = nov_norm *un_normy,
 
 			//x & y of tangent for ball
-			var new_tan_x = nv_tan * un_tanx;
-			var new_tan_y = nv_norm * un_tany;
+				new_tan_x = nv_tan * un_tanx,
+				new_tan_y = nv_norm * un_tany,
 
 			//x & y of tangent for otherball
-			var other_new_tan_x = nov_tan *un_tanx;
-			var other_new_tan_y = nov_tan *un_tany;
+				other_new_tan_x = nov_tan *un_tanx,
+				other_new_tan_y = nov_tan *un_tany,
 
 			//convert to regular coordinates for ball
-			var new_ball_velocity_x = new_norm_x+new_tan_x;
-			var new_ball_velocity_y = new_norm_y+new_tan_y;
+				new_ball_velocity_x = new_norm_x+new_tan_x,
+				new_ball_velocity_y = new_norm_y+new_tan_y,
 
 			//regular coords for otherball
-			var new_oball_velocity_x = other_new_norm_x+other_new_tan_x;
-			var new_oball_velocity_y = other_new_norm_y+other_new_tan_y;
+				new_oball_velocity_x = other_new_norm_x+other_new_tan_x,
+				new_oball_velocity_y = other_new_norm_y+other_new_tan_y;
 
 			ball.vx = new_ball_velocity_x;
 			ball.vy = new_ball_velocity_y;
 			otherball.vx = new_oball_velocity_x;
 			otherball.vy = new_oball_velocity_y;
+			}
+			
 		}
-		
-	}
+
+	function k_combinations(set, k) {
+    var i, j, combs, head, tailcombs;
+    
+    if (k > set.length || k <= 0) {
+        return [];
+    }
+    
+    if (k == set.length) {
+        return [set];
+    }
+    
+    if (k == 1) {
+        combs = [];
+        for (i = 0; i < set.length; i++) {
+            combs.push([set[i]]);
+        }
+        return combs;
+    }
+    
+    // Assert {1 < k < set.length}
+    
+    combs = [];
+    for (i = 0; i < set.length - k + 1; i++) {
+        head = set.slice(i, i+1);
+        tailcombs = k_combinations(set.slice(i + 1), k - 1);
+        for (j = 0; j < tailcombs.length; j++) {
+            combs.push(head.concat(tailcombs[j]));
+        }
+    }
+    return combs;
+}
 
 	function clearCanvas() {
 		ctx.clearRect(0,0,W,H);
