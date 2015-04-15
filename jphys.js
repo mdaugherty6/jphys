@@ -1,22 +1,39 @@
 $(document).ready(function() {
-	var W = 600;
-	var H = 400;
-	var width = String(W)+"px";
-	var height = String(H)+"px";
+	var W = 600,
+		H = 400,
+		width = String(W)+"px",
+		height = String(H)+"px";
+
 	$("#canvas").attr("width",width);
 	$("#canvas").attr("height",height);
-	var canvas = $("#canvas").get(0);
-	var ctx = canvas.getContext('2d');
 
-	var t = 0;
-	var frameinterval = 25;
-	var num = 30;
-	var gravity = .1;
-	var bounce = -.99;
-	var floorfriction = .998;
+	var canvas = $("#canvas").get(0),
+	 	ctx = canvas.getContext('2d'),
+		t = 0,
+		frameinterval = 15,
 
-	var radius = 10;
-	var balls = null;
+		num = 5,
+		gravity = .1,
+		bounce = -.8,
+		floorfriction = .999,
+		m_factor = 1.01;
+		radius = 20,
+		balls = null;
+
+
+	function getMousePos(canvas,evt) {
+		var rect = canvas.getBoundingClientRect();
+		return {
+			x:evt.clientX - rect.left,
+			y:evt.clientY - rect.top
+		};
+	}
+	
+	canvas.addEventListener('mousemove', function(evt){
+		var mousePos = getMousePos(canvas,evt);
+		console.log(mousePos[0]);
+	});
+	
 	drawStage();
 
 	setInterval(updateStage, frameinterval);
@@ -24,10 +41,36 @@ $(document).ready(function() {
 	function updateStage() {
 		t+=frameinterval;
 		clearCanvas();
+		testMouse();
 		detectCollide(balls);
 		updateBalls();
 		drawBalls();
 	}
+
+	// $('#canvas').on('mousedown mouseup', function mouseState(e) {
+ //    	if (e.type == "mousedown") {
+ //        	//code triggers on hold
+	//         canvas_x = event.pageX;
+	// 		canvas_y = event.pageY;
+	// 		console.log(canvas_x, canvas_y);
+	// 		balls.push(new Ball(canvas_x, canvas_y, radius, 0,0, randomColor()));
+	// 		for (var i = 0; i <balls.length; i++){
+	// 		console.log(balls[i].hitTest(canvas_x,canvas_y));
+	// 		}
+	// 		balls()
+ //   		 }
+	// });
+
+	
+
+	function testMouse() {
+		var mousePos = getMousePos(canvas,evt);
+		for (var i = 0; i < balls.length; i++) {
+			if (balls[i].hitTest(mousePos[0],mousePos[1])) console.log('hi!');
+		}
+	}
+
+
 
 	function Ball(x,y,radius,vx,vy,color) {
 		this.x = x;
@@ -40,10 +83,13 @@ $(document).ready(function() {
 		this.color = color;
 		this.origx = x;
 		this.origy = y;
-
-		//vectors
-
 	}
+
+	Ball.prototype.hitTest = function(hitX,hitY) {
+		var dx = this.x - hitX;
+		var dy = this.y - hitY;
+		return (dx*dx+dy*dy < this.radius*this.radius)
+	};
 
 	function drawBalls(){
 		for (var i = 0; i < balls.length; i++) {
@@ -65,10 +111,10 @@ $(document).ready(function() {
 	function drawStage() {
 		balls = new Array();
 		for (var i = 0; i<num; i++){
-			var startx = radius+Math.floor(Math.random()*(W-radius));
-			var starty = radius+Math.floor(Math.random()*(H-radius));
-			var vx =-6+Math.random()*12;
-			var vy = -6+Math.random()*12;
+			var startx = radius+Math.floor(Math.random()*(W-radius)),
+				starty = radius+Math.floor(Math.random()*(H-radius)),
+				vx =-6+Math.random()*12,
+				vy = -6+Math.random()*12;
 			balls.push(new Ball(startx,starty,radius,vx,vy,randomColor()));
 		}
 		drawBalls();
@@ -77,8 +123,8 @@ $(document).ready(function() {
 	}
 
 	function randomColor() {
-		var letters = '789ABC'.split('');
-		var color = '#';
+		var letters = '789ABC'.split(''),
+			color = '#';
 		for (var i = 0; i < 6; i++){
 			color += letters[Math.floor(Math.random()*6)];
 		}
@@ -89,9 +135,9 @@ $(document).ready(function() {
 
 		for (var i =0; i <balls.length; i++){
 			ball = balls[i];
-			var ballbottom = ball.y + ball.radius;
-			var ballleft = ball.x - ball.radius;
-			var ballright = ball.x + ball.radius;
+			var ballbottom = ball.y + ball.radius,
+				ballleft = ball.x - ball.radius,
+				ballright = ball.x + ball.radius;
 
 			ball.vy += gravity;
 			ball.vx *= floorfriction;
@@ -130,61 +176,47 @@ $(document).ready(function() {
 		var blist = k_combinations(balls,2) 
 
 		for (var i = 0; i < blist.length; i++){
-			var ball1 = blist[i][0];
-			var ball2 = blist[i][1];
-
-			var origx = (ball1.origx - ball2.origx);
-			var origy = (ball1.origy - ball2.origy);
-			var origdistance = Math.sqrt(origx*origx+origy*origy);
-			var dx = (ball1.x) - (ball2.x);
-			var dy = (ball1.y) - (ball2.y);
-
-			var distance = Math.sqrt(dx*dx+dy*dy);
+			var ball1 = blist[i][0],
+				ball2 = blist[i][1];
 
 			handleCollision(ball1,ball2);
 			}
-			// if ( distance < ball.radius*1.8) //console.log('test1');
 
 	}
 
-		//handleCollision(ball3,ball2);
-		//console.log(distance,dx, dy);
-
 	function handleCollision(ball,otherball){
 
-		var dx = (ball.x) - (otherball.x);
-		var dy = (ball.y) - (otherball.y);
-
-		var distance = Math.sqrt(dx*dx+dy*dy);
-
-
-		var un_normx = (dx/distance);
-		var un_normy = (dy/distance);
-		var un_tanx = -un_normy;
-		var un_tany = un_normx;
-
-		var v_norm = un_normx*ball.vx+un_normy*ball.vy;
-		var v_tan = un_tanx*ball.vx+un_tany*ball.vy;
-		var ov_norm = un_normx*otherball.vx+un_normy*otherball.vy;
-		var ov_tan = un_tanx*otherball.vx+un_tany*otherball.vy;
+		var dx = (ball.x) - (otherball.x),
+			dy = (ball.y) - (otherball.y),
+			distance = Math.sqrt(dx*dx+dy*dy),
+			un_normx = (dx/distance),
+			un_normy = (dy/distance),
+			//new tan vectors are opposite reciprocal to normal
+			un_tanx = -un_normy,
+			un_tany = un_normx,
+			v_norm = un_normx*ball.vx+un_normy*ball.vy,
+			v_tan = un_tanx*ball.vx+un_tany*ball.vy,
+			ov_norm = un_normx*otherball.vx+un_normy*otherball.vy,
+			ov_tan = un_tanx*otherball.vx+un_tany*otherball.vy,
 	
-
-		var nv_tan = v_tan;
-		var nov_tan = ov_tan;
+			nv_tan = v_tan,
+			nov_tan = ov_tan;
 
 		if ( ball.radius*2 > distance) {
 
 
-			var nv_norm = (ov_norm*.9),
-				nov_norm = (v_norm*.9);
+			var nv_norm = (ov_norm*m_factor),
+				nov_norm = (v_norm*m_factor);
 
 				if (distance < ball.radius*2-1) {
 					ball.x += 2*un_normx;
 					ball.vx = -ball.vx
-					//ball.y += (ball.radius+3)*2*un_normy;
+					ball.y += 2*un_normy;
+					ball.vy = -ball.vy
 					otherball.x -= (2)*un_normx;
-					otherball.vx = -otherball.vy;
-					//otherball.y += (ball.radius+3)*2*un_normy;
+					otherball.vx = -otherball.vx;
+					otherball.y -= (2)*un_normy;
+					otherball.vy = -otherball.vy;
 					//console.log('test');
 				}
 
@@ -221,42 +253,39 @@ $(document).ready(function() {
 		}
 
 	function k_combinations(set, k) {
-    var i, j, combs, head, tailcombs;
-    
-    if (k > set.length || k <= 0) {
-        return [];
-    }
-    
-    if (k == set.length) {
-        return [set];
-    }
-    
-    if (k == 1) {
-        combs = [];
-        for (i = 0; i < set.length; i++) {
-            combs.push([set[i]]);
-        }
-        return combs;
-    }
-    
-    // Assert {1 < k < set.length}
-    
-    combs = [];
-    for (i = 0; i < set.length - k + 1; i++) {
-        head = set.slice(i, i+1);
-        tailcombs = k_combinations(set.slice(i + 1), k - 1);
-        for (j = 0; j < tailcombs.length; j++) {
-            combs.push(head.concat(tailcombs[j]));
-        }
-    }
-    return combs;
-}
-
-	function clearCanvas() {
-		ctx.clearRect(0,0,W,H);
+	    var i, j, combs, head, tailcombs;
+	    
+	    if (k > set.length || k <= 0) {
+	        return [];
+	    }
+	    
+	    if (k == set.length) {
+	        return [set];
+	    }
+	    
+	    if (k == 1) {
+	        combs = [];
+	        for (i = 0; i < set.length; i++) {
+	            combs.push([set[i]]);
+	        }
+	        return combs;
+	    }
+	    
+	    // Assert {1 < k < set.length}
+	    
+	    combs = [];
+	    for (i = 0; i < set.length - k + 1; i++) {
+	        head = set.slice(i, i+1);
+	        tailcombs = k_combinations(set.slice(i + 1), k - 1);
+	        for (j = 0; j < tailcombs.length; j++) {
+	            combs.push(head.concat(tailcombs[j]));
+	        }
+	    }
+	    return combs;
 	}
 
-
-
+		function clearCanvas() {
+			ctx.clearRect(0,0,W,H);
+	}
 
 });
