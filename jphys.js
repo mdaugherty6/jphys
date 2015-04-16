@@ -13,8 +13,8 @@ $(document).ready(function() {
 		frameinterval = 15,
 
 		num = 10,		
-		gravity = .2,
-		bounce = -.9,
+		gravity = .1,
+		bounce = -.7,
 		floorfriction = .998,
 		m_factor = 1.003;
 		radius = 20
@@ -209,9 +209,11 @@ $(document).ready(function() {
 
 	function handleCollision(ball,otherball){
 
+
 		var dx = (ball.x) - (otherball.x),
 			dy = (ball.y) - (otherball.y),
 			distance = Math.sqrt(dx*dx+dy*dy),
+			ballradius = ball.radius + otherball.radius;
 			un_normx = (dx/distance),
 			un_normy = (dy/distance),
 			//new tan vectors are opposite reciprocal to normal
@@ -221,17 +223,17 @@ $(document).ready(function() {
 			v_tan = un_tanx*ball.vx+un_tany*ball.vy,
 			ov_norm = un_normx*otherball.vx+un_normy*otherball.vy,
 			ov_tan = un_tanx*otherball.vx+un_tany*otherball.vy,
-	
+			
 			nv_tan = v_tan,
 			nov_tan = ov_tan;
 
-		if ( ball.radius*2 > distance) {
+		if ( ballradius > distance) {
 
 
 			var nv_norm = (ov_norm*m_factor),
 				nov_norm = (v_norm*m_factor);
 
-				if (distance < ball.radius*2-1) {
+				if (distance < ballradius-1) {
 					ball.x += 2*un_normx;
 					ball.vx = -ball.vx
 					ball.y += 2*un_normy;
