@@ -12,16 +12,19 @@ $(document).ready(function() {
 	 	ctx = canvas.getContext('2d'),
 		t = 0,
 		frameinterval = 15,
-		num = 5,		
-		gravity = .1,
-		bounce = -.7,
+		num = 12,		
+		gravity = .2,
+		bounce = -.8,
 		floorfriction = .998,
-		m_factor = 1.003,
-		radius_lower = 25,
+		// m_factor = 1.003,
+		radius_lower = 5,
 		radius_upper = 30,
-		radius_mid = (radius_lower+radius_upper)/2,
-		radius_amp = radius_upper-radius_mid,
-		balls = null;
+		radius_factor = radius_upper-radius_lower;
+		balls = null,
+		m1 = 2,
+		m2 = 5,
+		m3 = 10,
+		m4 = 20;
 
 	drawStage();
 
@@ -42,8 +45,11 @@ $(document).ready(function() {
 			var rect = canvas.getBoundingClientRect();
 			canvas_x = event.pageX-rect.left,
 			canvas_y = event.pageY-rect.top,
-			radius = radius_mid + Math.random()*radius_amp;
-			balls.push(new Ball(canvas_x, canvas_y+Math.floor(radius), radius, 0,0,gravity, randomColor()));
+			// radius = radius_lower + Math.random()*radius_factor;
+			// if (radius > (radius_lower+radius_upper)/2) var mass = 15; 
+			// else mass = 2;
+			rad = radiustoMass();
+			balls.push(new Ball(canvas_x, canvas_y+Math.floor(rad['r']), rad['r'], 0,0,gravity, randomColor(),rad['m']));
 	
 		}
 			
@@ -65,8 +71,11 @@ $(document).ready(function() {
 						ball.vx = -v['x']*10;
 						ball.vy = -v['y']*10;
 						ball.g = 0;
-						
+						if(!ball.hitTest(canvas_x,canvas_y)){
+						ball.g = gravity;
+						}
 						}	
+
 					if(!ball.hitTest(canvas_x,canvas_y)){
 						ball.g = gravity;
 						// balls[i].vx = v['x'];
@@ -112,18 +121,17 @@ $(document).ready(function() {
 
 
 //Ball creation
-	function Ball(x,y,radius,vx,vy,g,color) {
+	function Ball(x,y,radius,vx,vy,g,color,mass) {
 		this.x = x;
 		this.y = y;
 		this.radius = radius;
 		this.vx = vx;
 		this.vy = vy;
-		this.vmag = Math.sqrt(Math.pow(vx,2)+Math.pow(vy,2));
-		this.vangle = Math.atan(vy/vx);
 		this.color = color;
 		this.origx = x;
 		this.origy = y;
 		this.g = gravity;
+		this.m = mass;
 	}
 
 	Ball.prototype.hitTest = function(hitX,hitY) {
@@ -155,9 +163,9 @@ $(document).ready(function() {
 			var startx = radius_upper+Math.floor(Math.random()*(W-radius_upper)),
 				starty = radius_upper+Math.floor(Math.random()*(H-radius_upper)),
 				vx =-6+Math.random()*12,
-				vy = -6+Math.random()*12;
-				radius = Math.ceil(radius_mid + Math.random()*radius_amp);
-			balls.push(new Ball(startx,starty,radius,vx,vy,gravity,randomColor()));
+				vy = -6+Math.random()*12,
+				rad = radiustoMass();
+			balls.push(new Ball(startx,starty,rad['r'],vx,vy,gravity,randomColor(),rad['m']));
 		}
 		drawBalls();
 
@@ -171,6 +179,20 @@ $(document).ready(function() {
 			color += letters[Math.floor(Math.random()*6)];
 		}
 		return color;
+	}
+
+	function radiustoMass() {
+			var radius = radius_lower + Math.random()*radius_factor;
+			var mid = radius_lower+radius_upper;
+			if (radius <= mid/4) var mass = m1;
+			else if (radius <= mid/2) mass = m2; 
+			else if (radius <= 3*mid/4) mass =m3;
+			else mass =m4;
+			var res = {
+				r: radius,
+				m: mass
+			};
+			return res;
 	}
 
 	function updateBalls() {
@@ -242,14 +264,17 @@ $(document).ready(function() {
 			v_tan = un_tanx*ball.vx+un_tany*ball.vy,
 			ov_norm = un_normx*otherball.vx+un_normy*otherball.vy,
 			ov_tan = un_tanx*otherball.vx+un_tany*otherball.vy,
-			
 			nv_tan = v_tan,
-			nov_tan = ov_tan;
+			nov_tan = ov_tan,
+			m1 = ball.m,
+			m2 = otherball.m;
 
 		if ( ballradius > distance) {
 
-			var nv_norm = (ov_norm*m_factor),
-				nov_norm = (v_norm*m_factor);
+			var nv_norm = (v_norm*(m1-m2)+ov_norm*2*m2)/(ball.m+otherball.m),
+				nov_norm = (ov_norm*(m2-m1)+v_norm*2*m1)/(ball.m+otherball.m);
+				console.log(nv_norm, nov_norm);
+
 
 				if (distance < ballradius-1) {
 					ball.x += 2*un_normx;
