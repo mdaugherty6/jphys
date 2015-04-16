@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	var W = 800,
-		H = 450
+		H = 500,
 		width = String(W)+"px",
 		height = String(H)+"px";
 
@@ -11,13 +11,13 @@ $(document).ready(function() {
 	var canvas = $("#canvas").get(0),
 	 	ctx = canvas.getContext('2d'),
 		t = 0,
-		frameinterval = 15,
-		num = 12,		
-		gravity = .2,
-		bounce = -.8,
+		frameinterval = 10,
+		num = 17,		
+		gravity = .1,
+		bounce = -.9,
 		floorfriction = .998,
 		// m_factor = 1.003,
-		radius_lower = 5,
+		radius_lower = 8,
 		radius_upper = 30,
 		radius_factor = radius_upper-radius_lower;
 		balls = null,
@@ -50,6 +50,7 @@ $(document).ready(function() {
 			// else mass = 2;
 			rad = radiustoMass();
 			balls.push(new Ball(canvas_x, canvas_y+Math.floor(rad['r']), rad['r'], 0,0,gravity, randomColor(),rad['m']));
+			return false;
 	
 		}
 			
@@ -71,7 +72,7 @@ $(document).ready(function() {
 						ball.vx = -v['x']*10;
 						ball.vy = -v['y']*10;
 						ball.g = 0;
-						if(!ball.hitTest(canvas_x,canvas_y)){
+						if(evt.type == 'mousemove'){
 						ball.g = gravity;
 						}
 						}	
@@ -200,6 +201,7 @@ $(document).ready(function() {
 		for (var i =0; i <balls.length; i++){
 			ball = balls[i];
 			var ballbottom = ball.y + ball.radius,
+				balltop = ball.y - ball.radius,
 				ballleft = ball.x - ball.radius,
 				ballright = ball.x + ball.radius;
 
@@ -221,6 +223,11 @@ $(document).ready(function() {
 					ball.x = ball.radius;
 					ball.vx = -ball.vx;
 				}
+			}
+
+			else if (balltop < 0) {
+				ball.y = ball.radius;
+				ball.vy = -ball.vy;
 			}
 
 			else if (ballright > W) {
@@ -273,7 +280,7 @@ $(document).ready(function() {
 
 			var nv_norm = (v_norm*(m1-m2)+ov_norm*2*m2)/(ball.m+otherball.m),
 				nov_norm = (ov_norm*(m2-m1)+v_norm*2*m1)/(ball.m+otherball.m);
-				console.log(nv_norm, nov_norm);
+		
 
 
 				if (distance < ballradius-1) {
@@ -317,13 +324,6 @@ $(document).ready(function() {
 			otherball.vy = new_oball_velocity_y;
 			}
 
-		if (Math.abs(dx) <1 && Math.abs(dy)<1) {
-			console.log('test')
-			// dx += 5;
-			// dy += 5;
-			}
-
-			
 		}
 
 	function k_combinations(set, k) {
