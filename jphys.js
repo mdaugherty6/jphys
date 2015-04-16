@@ -1,6 +1,6 @@
 $(document).ready(function() {
-	var W = 600,
-		H = 400,
+	var W = 800,
+		H = 450
 		width = String(W)+"px",
 		height = String(H)+"px";
 
@@ -12,27 +12,29 @@ $(document).ready(function() {
 		t = 0,
 		frameinterval = 15,
 
-		num = 5,
-		gravity = .1,
-		bounce = -.8,
-		floorfriction = .999,
-		m_factor = 1.01;
-		radius = 20,
+		num = 10,		
+		gravity = .2,
+		bounce = -.9,
+		floorfriction = .998,
+		m_factor = 1.003;
+		radius = 20
 		balls = null;
 
-
-	function getMousePos(canvas,evt) {
+/* 	canvas.addEventListener('mousemove', function(evt){
+		var mousePos = getMousePos(canvas,evt);
+		console.log(mousePos['x']);
+	}); 
+	
 		var rect = canvas.getBoundingClientRect();
+	function getMousePos(canvas,evt) {
 		return {
 			x:evt.clientX - rect.left,
 			y:evt.clientY - rect.top
 		};
-	}
+	} */
+
 	
-	canvas.addEventListener('mousemove', function(evt){
-		var mousePos = getMousePos(canvas,evt);
-		console.log(mousePos[0]);
-	});
+
 	
 	drawStage();
 
@@ -41,38 +43,57 @@ $(document).ready(function() {
 	function updateStage() {
 		t+=frameinterval;
 		clearCanvas();
-		testMouse();
 		detectCollide(balls);
 		updateBalls();
 		drawBalls();
 	}
 
-	// $('#canvas').on('mousedown mouseup', function mouseState(e) {
- //    	if (e.type == "mousedown") {
- //        	//code triggers on hold
-	//         canvas_x = event.pageX;
-	// 		canvas_y = event.pageY;
-	// 		console.log(canvas_x, canvas_y);
-	// 		balls.push(new Ball(canvas_x, canvas_y, radius, 0,0, randomColor()));
-	// 		for (var i = 0; i <balls.length; i++){
-	// 		console.log(balls[i].hitTest(canvas_x,canvas_y));
-	// 		}
-	// 		balls()
- //   		 }
-	// });
+	
+		$('#canvas').on('mousedown mouseover mouseup', function mouseState(e) {
+		if (e.type == "mousedown") {
+			var rect = canvas.getBoundingClientRect();
+			canvas_x = event.pageX-rect.left,
+			canvas_y = event.pageY-rect.top,
+			radius = 10 + Math.random()*20;
+			balls.push(new Ball(canvas_x, canvas_y+Math.floor(radius), radius, 0,0,gravity, randomColor()));
+	
+		}
+			
+	 	if (e.type =="mouseover"){
+			canvas.addEventListener('mousemove',function(evt){
+				var rect = canvas.getBoundingClientRect();
+				canvas_x = evt.clientX - rect.left;
+				canvas_y = evt.clientY - rect.top;
+				console.log(canvas_x);
+				for (var i = 0; i <balls.length; i++){
+					if(balls[i].hitTest(canvas_x,canvas_y)) {
+						console.log('hi');
+						balls[i].x = canvas_x;
+						balls[i].y = canvas_y;
+						balls[i].vx = 0;
+						balls[i].vy = 0;
+						balls[i].g = 0;
+						
+						}	
+					if(!balls[i].hitTest(canvas_x,canvas_y)) balls[i].g = gravity;
+				}
+			});
+			}
+		}); 
+
 
 	
 
-	function testMouse() {
+/* 	function testMouse() {
 		var mousePos = getMousePos(canvas,evt);
 		for (var i = 0; i < balls.length; i++) {
 			if (balls[i].hitTest(mousePos[0],mousePos[1])) console.log('hi!');
 		}
-	}
+	} */
 
 
 
-	function Ball(x,y,radius,vx,vy,color) {
+	function Ball(x,y,radius,vx,vy,g,color) {
 		this.x = x;
 		this.y = y;
 		this.radius = radius;
@@ -83,6 +104,7 @@ $(document).ready(function() {
 		this.color = color;
 		this.origx = x;
 		this.origy = y;
+		this.g = gravity;
 	}
 
 	Ball.prototype.hitTest = function(hitX,hitY) {
@@ -114,8 +136,9 @@ $(document).ready(function() {
 			var startx = radius+Math.floor(Math.random()*(W-radius)),
 				starty = radius+Math.floor(Math.random()*(H-radius)),
 				vx =-6+Math.random()*12,
-				vy = -6+Math.random()*12;
-			balls.push(new Ball(startx,starty,radius,vx,vy,randomColor()));
+				vy = -6+Math.random()*12,
+				radius = 10 + Math.random()*12;
+			balls.push(new Ball(startx,starty,radius,vx,vy,gravity,randomColor()));
 		}
 		drawBalls();
 
@@ -139,7 +162,7 @@ $(document).ready(function() {
 				ballleft = ball.x - ball.radius,
 				ballright = ball.x + ball.radius;
 
-			ball.vy += gravity;
+			ball.vy += ball.g;
 			ball.vx *= floorfriction;
 
 			ball.x += ball.vx;
