@@ -7,39 +7,27 @@ $(document).ready(function() {
 	$("#canvas").attr("width",width);
 	$("#canvas").attr("height",height);
 
+	//Global Variables
 	var canvas = $("#canvas").get(0),
 	 	ctx = canvas.getContext('2d'),
 		t = 0,
 		frameinterval = 15,
-
-		num = 10,		
+		num = 5,		
 		gravity = .1,
 		bounce = -.7,
 		floorfriction = .998,
-		m_factor = 1.003;
-		radius = 20
+		m_factor = 1.003,
+		radius_lower = 25,
+		radius_upper = 30,
+		radius_mid = (radius_lower+radius_upper)/2,
+		radius_amp = radius_upper-radius_mid,
 		balls = null;
 
-/* 	canvas.addEventListener('mousemove', function(evt){
-		var mousePos = getMousePos(canvas,evt);
-		console.log(mousePos['x']);
-	}); 
-	
-		var rect = canvas.getBoundingClientRect();
-	function getMousePos(canvas,evt) {
-		return {
-			x:evt.clientX - rect.left,
-			y:evt.clientY - rect.top
-		};
-	} */
-
-	
-
-	
 	drawStage();
 
 	setInterval(updateStage, frameinterval);
 
+	//Game Loop
 	function updateStage() {
 		t+=frameinterval;
 		clearCanvas();
@@ -48,51 +36,82 @@ $(document).ready(function() {
 		drawBalls();
 	}
 
-	
+	//Mouse Events
 		$('#canvas').on('mousedown mouseover mouseup', function mouseState(e) {
 		if (e.type == "mousedown") {
 			var rect = canvas.getBoundingClientRect();
 			canvas_x = event.pageX-rect.left,
 			canvas_y = event.pageY-rect.top,
-			radius = 10 + Math.random()*20;
+			radius = radius_mid + Math.random()*radius_amp;
 			balls.push(new Ball(canvas_x, canvas_y+Math.floor(radius), radius, 0,0,gravity, randomColor()));
 	
 		}
 			
 	 	if (e.type =="mouseover"){
+	 		var previousEvent = false;
 			canvas.addEventListener('mousemove',function(evt){
-				var rect = canvas.getBoundingClientRect();
-				canvas_x = evt.clientX - rect.left;
-				canvas_y = evt.clientY - rect.top;
-				console.log(canvas_x);
+				var rect = canvas.getBoundingClientRect(),
+					canvas_x = evt.clientX - rect.left,
+					canvas_y = evt.clientY - rect.top;
+					evt.time = Date.now();
+		    		var v = makeVelocityCalculator( evt, previousEvent);
+		    		previousEvent = evt;
+
 				for (var i = 0; i <balls.length; i++){
-					if(balls[i].hitTest(canvas_x,canvas_y)) {
-						console.log('hi');
-						balls[i].x = canvas_x;
-						balls[i].y = canvas_y;
-						balls[i].vx = 0;
-						balls[i].vy = 0;
-						balls[i].g = 0;
+					var ball = balls[i];
+					if(ball.hitTest(canvas_x,canvas_y)) {
+						ball.x = canvas_x;
+						ball.y = canvas_y;
+						ball.vx = -v['x']*10;
+						ball.vy = -v['y']*10;
+						ball.g = 0;
 						
 						}	
-					if(!balls[i].hitTest(canvas_x,canvas_y)) balls[i].g = gravity;
+					if(!ball.hitTest(canvas_x,canvas_y)){
+						ball.g = gravity;
+						// balls[i].vx = v['x'];
+						// balls[i].vy = v['y'];
+
+					} 
 				}
 			});
 			}
 		}); 
 
+		// var previousEvent = false;
+		// $(document).mousemove(function(evt) {
+		//     evt.time = Date.now();
+		//     var v = makeVelocityCalculator( evt, previousEvent);
+		//     previousEvent = evt;
+		//     console.log(v['x'],v['y']);  
+		// });
 
-	
+		function makeVelocityCalculator(e_init, e) {
+		    var x = e_init.clientX, new_x,new_y,new_t,
+		            x_dist, y_dist, interval,
+		          	y = e_init.clientY,
+		            t;
+		    if (e === false) {return 0;}
+		    t = e.time;
+		    new_x = e.clientX;
+		    new_y = e.clientY;
+		    new_t = Date.now();
+		    x_dist = new_x - x;
+		    y_dist = new_y - y;
+		    interval = new_t - t;
+		            // update values:
+		    x = new_x;
+		    y = new_y;
+		    var velocity = {
+		    	x: x_dist/interval,
+		    	y: y_dist/interval,
+		    }
+		    return velocity;
+		    }
 
-/* 	function testMouse() {
-		var mousePos = getMousePos(canvas,evt);
-		for (var i = 0; i < balls.length; i++) {
-			if (balls[i].hitTest(mousePos[0],mousePos[1])) console.log('hi!');
-		}
-	} */
 
 
-
+//Ball creation
 	function Ball(x,y,radius,vx,vy,g,color) {
 		this.x = x;
 		this.y = y;
@@ -133,11 +152,11 @@ $(document).ready(function() {
 	function drawStage() {
 		balls = new Array();
 		for (var i = 0; i<num; i++){
-			var startx = radius+Math.floor(Math.random()*(W-radius)),
-				starty = radius+Math.floor(Math.random()*(H-radius)),
+			var startx = radius_upper+Math.floor(Math.random()*(W-radius_upper)),
+				starty = radius_upper+Math.floor(Math.random()*(H-radius_upper)),
 				vx =-6+Math.random()*12,
-				vy = -6+Math.random()*12,
-				radius = 10 + Math.random()*12;
+				vy = -6+Math.random()*12;
+				radius = Math.ceil(radius_mid + Math.random()*radius_amp);
 			balls.push(new Ball(startx,starty,radius,vx,vy,gravity,randomColor()));
 		}
 		drawBalls();
@@ -193,7 +212,7 @@ $(document).ready(function() {
 			}
 		}
 	}
-
+	//Hit Detection
 	function detectCollide(balls) {
 
 		var blist = k_combinations(balls,2) 
@@ -229,20 +248,18 @@ $(document).ready(function() {
 
 		if ( ballradius > distance) {
 
-
 			var nv_norm = (ov_norm*m_factor),
 				nov_norm = (v_norm*m_factor);
 
 				if (distance < ballradius-1) {
 					ball.x += 2*un_normx;
-					ball.vx = -ball.vx
+					ball.vx = -ball.vy;
 					ball.y += 2*un_normy;
-					ball.vy = -ball.vy
+					ball.vy = ball.vx;
 					otherball.x -= (2)*un_normx;
 					otherball.vx = -otherball.vx;
 					otherball.y -= (2)*un_normy;
 					otherball.vy = -otherball.vy;
-					//console.log('test');
 				}
 
 			//find x and y component of normal for ball
@@ -274,6 +291,13 @@ $(document).ready(function() {
 			otherball.vx = new_oball_velocity_x;
 			otherball.vy = new_oball_velocity_y;
 			}
+
+		if (Math.abs(dx) <1 && Math.abs(dy)<1) {
+			console.log('test')
+			// dx += 5;
+			// dy += 5;
+			}
+
 			
 		}
 
