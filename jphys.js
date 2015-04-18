@@ -299,9 +299,9 @@ $(document).ready(function() {
 
 				if (distance < ballradius-1) {
 					ball.x += 2*un_normx;
-					ball.vx = -ball.vy;
+					ball.vx = -ball.vx;
 					ball.y += 2*un_normy;
-					ball.vy = ball.vx;
+					ball.vy = -ball.vy;
 					otherball.x -= (2)*un_normx;
 					otherball.vx = -otherball.vx;
 					otherball.y -= (2)*un_normy;
