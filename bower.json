@@ -1,0 +1,24 @@
+{
+  "name": "JPhys",
+  "version": "0.0.1",
+  "homepage": "https://github.com/mdaugherty6/jphys",
+  "description": "Javascript html5 canvas physics",
+  "main": "jphys.js",
+  "keywords": [
+    "Javascript",
+    "html5",
+    "canvas",
+    "physics"
+  ],
+  "authors": [
+    "Michael Daugherty"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
