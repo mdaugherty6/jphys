@@ -6,25 +6,39 @@ $(document).ready(function() {
 
 	$("#canvas").attr("width",width);
 	$("#canvas").attr("height",height);
+	$('#canvas').css('background-color', 'rgba(158, 167, 184, 0.2)');
+
+	var gravity = 0;
+	$("#slider").slider({
+		  min: -.3,
+		  max: .3,
+		  step: .025,
+		  value: 0,
+		  orientation:"vertical",
+		  slide: function(event, ui) {
+		    $("#amount-secondary").val(ui.value);
+		    gravity = -ui.value;
+		  }
+		})
+
 
 	//Global Variables
 	var canvas = $("#canvas").get(0),
 	 	ctx = canvas.getContext('2d'),
 		t = 0,
 		frameinterval = 10,
-		num = 17,		
-		gravity = .1,
+		num = 5,		
 		bounce = -.9,
 		floorfriction = .998,
 		// m_factor = 1.003,
-		radius_lower = 8,
+		radius_lower = 5,
 		radius_upper = 30,
 		radius_factor = radius_upper-radius_lower;
 		balls = null,
 		m1 = 2,
 		m2 = 5,
 		m3 = 10,
-		m4 = 20;
+		m4 = 25;
 
 	drawStage();
 
@@ -43,8 +57,8 @@ $(document).ready(function() {
 		$('#canvas').on('mousedown mouseover mouseup', function mouseState(e) {
 		if (e.type == "mousedown") {
 			var rect = canvas.getBoundingClientRect();
-			canvas_x = event.pageX-rect.left,
-			canvas_y = event.pageY-rect.top,
+			canvas_x = e.pageX-rect.left,
+			canvas_y = e.pageY-rect.top,
 			// radius = radius_lower + Math.random()*radius_factor;
 			// if (radius > (radius_lower+radius_upper)/2) var mass = 15; 
 			// else mass = 2;
@@ -205,7 +219,7 @@ $(document).ready(function() {
 				ballleft = ball.x - ball.radius,
 				ballright = ball.x + ball.radius;
 
-			ball.vy += ball.g;
+			ball.vy += gravity;
 			ball.vx *= floorfriction;
 
 			ball.x += ball.vx;

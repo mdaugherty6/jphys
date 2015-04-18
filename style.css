@@ -76,10 +76,22 @@ ul {
 	}
 
 #about p {
-	padding-top:30px;
+	padding-top:15px;
+	font-size:2em;
+	font-family:'Indie Flower',cursive;
+	color:#222;
+}
+
+#head {
+	width:800px;
+	position:relative;
+	text-align:center;
+	margin:0 auto;
+	padding-top:15px;
 	font-size:2em;
 	font-family:'Indie Flower',cursive;
 	color:#2;
+
 }
 	
 .container {
@@ -88,15 +100,42 @@ max-width:960px;
 margin:0 auto;
 }
 
+#game {
+	position:relative;
+	width:850px;
+	margin:0 auto;
+
+}
 .canvas {
 	width:800px;
 	position:relative;
-	margin:0 auto;
+	display:inline-block;
+	
 }
 
 #canvas {
 border:1px solid;
+display:inline-block;
 }
+
+#slider {
+	margin: 0 auto;
+	position:relative;
+	top:0;
+	display:inline-block;
+	height:500px;
+	margin-left:10px;
+	float:right;
+}
+
+#labeler {
+	position:relative;
+	width:50%;
+	margin: 0 auto;
+	font-size:1em;
+}
+
+
 
 
 

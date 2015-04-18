@@ -3,7 +3,9 @@
 	<head>
 		<title>Test</title>
 		<script src = "jquery.js"></script>
+		<script src = "jqueryui/jquery-ui.min.js"></script>
 		<script src = "jphys.js"></script>
+		<link rel = "stylesheet" href="jqueryui/jquery-ui.min.css">
 		<link rel = "stylesheet" href="style.css">
 		<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Indie+Flower">
 	</head>
@@ -20,14 +22,21 @@
 	</nav>
 	
 	<div class = "container">
-		<div class ="canvas">
-			<canvas id = "canvas"></canvas>
+		<div id = "about">
+			<p>Cause as much chaos as possible!</p>
+		</div>
+		
+		<div id = "game">
+			<div class ="canvas">
+				<canvas id = "canvas"></canvas>
+			</div>
+			<div id = "slider"></div>
 		</div>
 
 		<div id = "about">
-			<p>Cause as much chaos as possible!</p>
 			<p>Click on empty space to add a ball.</p>
 			<p>Hover over a ball to take control.</p>
+			<p>Use the slider to control gravity.</p>
 			
 		</div>
 	</div>
